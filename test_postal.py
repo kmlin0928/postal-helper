@@ -4,7 +4,7 @@ import urllib.request
 import urllib.parse
 import json
 
-sys.path.insert(0, "C:/Users/charl/Downloads/postal-helper")
+sys.path.insert(0, ".")
 from postal import query_zipcode, format_result
 
 TEST_CASES = [
@@ -30,7 +30,7 @@ for addr, note in TEST_CASES:
         results.append(f"[輸入] {addr}\n[錯誤] {e}\n")
 
 report = "\n" + ("=" * 50 + "\n").join(results)
-with open("C:/Users/charl/Downloads/postal-helper/test_result.txt", "w", encoding="utf-8") as f:
+with open("test_result.txt", "w", encoding="utf-8") as f:
     f.write(report)
 
 print("Done")
