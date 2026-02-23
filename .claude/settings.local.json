@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:zip5.5432.tw)",
+      "Bash(cd:*)",
+      "Bash(echo exit: $?:*)",
+      "Bash(python:*)",
+      "Bash(cd \"C:/Users/charl/Downloads/postal-helper\" && uv run python test_postal.py 2>&1)",
+      "Bash(uv run:*)",
+      "Bash(echo EXIT:$?:*)",
+      "Bash(dir C:\\\\Users\\\\charl\\\\Downloads\\\\postal-helper:*)",
+      "Bash(git:*)",
+      "Bash(echo DONE:*)",
+      "Bash(cd /c/Users/charl/Downloads/postal-helper && uv add flask 2>&1)",
+      "Bash(echo Exit: $?:*)"
+    ]
+  }
+}

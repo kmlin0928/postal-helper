@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "台灣郵遞區號查詢命令列工具"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "flask",
+]
 
 [project.scripts]
 postal = "postal:main"

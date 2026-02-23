@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>郵遞區號查詢</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: #f0f0f0;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    /* ── 頂部導覽列 ── */
+    .topbar {
+      background: #2e7d32;
+      color: #fff;
+      padding: .45rem 1.5rem;
+      font-size: .85rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .topbar span { opacity: .9; }
+    .topbar .logo-text {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+    }
+
+    /* ── 網站標題列 ── */
+    .sitebar {
+      background: #fff;
+      border-bottom: 3px solid #43a047;
+      padding: .7rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+    }
+    .sitebar .post-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #c62828;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.3rem;
+      font-weight: 900;
+      flex-shrink: 0;
+      border: 2px solid #222;
+    }
+    .sitebar .site-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1b5e20;
+      letter-spacing: .06em;
+    }
+
+    /* ── 麵包屑 ── */
+    .breadcrumb {
+      background: #f5f5f5;
+      border-bottom: 1px solid #ddd;
+      padding: .4rem 1.5rem;
+      font-size: .82rem;
+      color: #666;
+    }
+    .breadcrumb a { color: #2e7d32; text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb .current { color: #c62828; }
+
+    /* ── 主內容區 ── */
+    .main-wrap {
+      max-width: 860px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+
+    /* ── 頁面標題 ── */
+    .page-heading {
+      display: flex;
+      align-items: baseline;
+      gap: .6rem;
+      margin-bottom: 1rem;
+      padding-bottom: .6rem;
+      border-bottom: 2px solid #43a047;
+    }
+    .page-heading .section-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1b5e20;
+    }
+    .page-heading .sep {
+      font-size: 1.3rem;
+      color: #aaa;
+      margin: 0 .1rem;
+    }
+    .page-heading .page-name {
+      font-size: 1.3rem;
+      color: #333;
+      font-weight: 400;
+    }
+
+    /* ── 查詢區塊 ── */
+    .query-box {
+      background: #fff;
+      border: 1px solid #c8e6c9;
+      border-top: 4px solid #43a047;
+    }
+
+    .query-box-header {
+      background: #e8f5e9;
+      border-bottom: 1px solid #c8e6c9;
+      padding: .5rem 1rem;
+      font-size: .9rem;
+      color: #2e7d32;
+      font-weight: 700;
+    }
+
+    .query-box-body {
+      padding: 1.4rem 1.5rem 1.6rem;
+      background: #f1faf1;
+    }
+
+    .input-label {
+      font-size: .9rem;
+      color: #333;
+      margin-bottom: .5rem;
+      display: block;
+    }
+    .input-label em {
+      color: #c62828;
+      font-style: normal;
+      margin-right: .2rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: .5rem;
+    }
+
+    #address-input {
+      flex: 1;
+      padding: .5rem .8rem;
+      font-size: .95rem;
+      border: 1px solid #a5d6a7;
+      background: #fff;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      font-family: inherit;
+      color: #333;
+    }
+    #address-input:focus {
+      border-color: #2e7d32;
+      box-shadow: 0 0 0 2px rgba(46,125,50,.15);
+    }
+
+    #query-btn {
+      padding: .5rem 1.4rem;
+      font-size: .95rem;
+      background: #43a047;
+      color: #fff;
+      border: 1px solid #2e7d32;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      font-weight: 700;
+      transition: background .15s;
+    }
+    #query-btn:hover:not(:disabled) { background: #2e7d32; }
+    #query-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+    /* ── 結果區 ── */
+    #result {
+      margin-top: 1.2rem;
+      min-height: 2rem;
+    }
+
+    .loading {
+      color: #555;
+      font-size: .9rem;
+      padding: .4rem 0;
+    }
+
+    .result-inner {
+      background: #fff;
+      border: 1px solid #c8e6c9;
+      padding: 1rem 1.2rem;
+    }
+
+    .result-code {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #1b5e20;
+      letter-spacing: .08em;
+    }
+
+    .result-label {
+      font-size: .82rem;
+      color: #555;
+      margin-top: .1rem;
+    }
+
+    .result-addr {
+      font-size: .95rem;
+      color: #333;
+      margin-top: .55rem;
+      padding-top: .55rem;
+      border-top: 1px dashed #c8e6c9;
+    }
+
+    .result-warn {
+      font-size: .82rem;
+      color: #c62828;
+      margin-top: .4rem;
+    }
+
+    .error-msg {
+      color: #c62828;
+      font-size: .9rem;
+      padding: .5rem .8rem;
+      background: #fff8f8;
+      border: 1px solid #ffcdd2;
+      border-left: 4px solid #c62828;
+    }
+
+    /* ── footer ── */
+    .footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: .78rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部導覽列 -->
+  <div class="topbar">
+    <span class="logo-text">中華郵政全球資訊網</span>
+    <span>郵務業務專區</span>
+  </div>
+
+  <!-- 網站標題 -->
+  <div class="sitebar">
+    <div class="post-logo">郵</div>
+    <div class="site-title">郵務業務專區</div>
+  </div>
+
+  <!-- 麵包屑 -->
+  <div class="breadcrumb">
+    &#127968; <a href="#">首頁</a> &gt; <a href="#">快速查詢</a> &gt; <span class="current">郵遞區號查詢</span>
+  </div>
+
+  <!-- 主內容 -->
+  <div class="main-wrap">
+    <div class="page-heading">
+      <span class="section-name">快速查詢</span>
+      <span class="sep">｜</span>
+      <span class="page-name">郵遞區號查詢</span>
+    </div>
+
+    <div class="query-box">
+      <div class="query-box-header">3+3 郵遞區號查詢</div>
+      <div class="query-box-body">
+        <label class="input-label" for="address-input">
+          <em>*</em>請輸入地址：
+        </label>
+        <div class="input-row">
+          <input id="address-input" type="text"
+            placeholder="例：台北市中正區杭州南路一段23號" autofocus>
+          <button id="query-btn">查詢</button>
+        </div>
+        <div id="result"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">本工具使用 zip5.5432.tw API，查詢結果僅供參考。</div>
+
+  <script>
+    const input = document.getElementById('address-input');
+    const btn = document.getElementById('query-btn');
+    const resultEl = document.getElementById('result');
+
+    async function doQuery() {
+      const address = input.value.trim();
+      if (!address) { input.focus(); return; }
+
+      btn.disabled = true;
+      resultEl.innerHTML = '<p class="loading">查詢中，請稍候…</p>';
+
+      try {
+        const res = await fetch('/api/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          const isNoSix = data.label.includes('5碼');
+          resultEl.innerHTML = `
+            <div class="result-inner">
+              <div class="result-code">${esc(data.code)}</div>
+              <div class="result-label">${esc(data.label)}</div>
+              ${data.std_address
+                ? `<div class="result-addr">標準地址：${esc(data.std_address)}</div>`
+                : ''}
+              ${isNoSix
+                ? '<div class="result-warn">※ 此地址查無 6 碼郵遞區號資料，以 5 碼顯示。</div>'
+                : ''}
+            </div>`;
+        } else {
+          resultEl.innerHTML = `<div class="error-msg">${esc(data.error)}</div>`;
+        }
+      } catch {
+        resultEl.innerHTML = `<div class="error-msg">網路錯誤，請稍後再試。</div>`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    btn.addEventListener('click', doQuery);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') doQuery(); });
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
